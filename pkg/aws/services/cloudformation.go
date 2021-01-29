@@ -1,4 +1,4 @@
-package cloudformation
+package services
 
 import (
 	"context"
@@ -13,15 +13,15 @@ type Cloudformation interface {
 	cloudformationiface.CloudFormationAPI
 
 	// wrapper for ListStackInstancesWithContext and aggregate result into list
-	ListStackInstancesAsList(ctx context.Context, input *cloudformation.ListStackInstancesInput) ([]*cloudformation.StackInstanceSummary, error)
+	ListStackAsList(ctx context.Context, stackStatus []*string) ([]*cloudformation.StackInstanceSummary, error)
 
 	// wrapper for DescribeStackEvents and aggregate result into list
-	DescribeStackEventsAsList(ctx context.Context, input *cloudformation.DescribeStackEventsInput) ([]*cloudformation.StackEvent, error)
+	DescribeStackEventsAsList(ctx context.Context, stackName string) ([]*cloudformation.StackEvent, error)
 }
 
-func newCloudformation(session *session.Session) Cloudformation {
+func NewCloudFormation(session *session.Session) Cloudformation {
 	return &defaultCloudformation{
-		CloudformationAPI: cloudformation.New(session),
+		CloudFormationAPI: cloudformation.New(session),
 	}
 }
 
@@ -29,9 +29,14 @@ type defaultCloudformation struct {
 	cloudformationiface.CloudFormationAPI
 }
 
-func (c *defaultCloudformation) ListStackInstancesAsList(ctx context.Context, input *cloudformation.ListStackInstancesInput) ([]*cloudformation.StackInstanceSummary, error) {
+func (c *defaultCloudformation) ListStackAsList(ctx context.Context, stackStatus []*string) ([]*cloudformation.StackInstanceSummary, error) {
 	var result []*cloudformation.StackInstanceSummary
-	if err := c.ListStackInstancesPagesWithContext(ctx, input, func(output *cloudformation.ListStackInstancesOutput, _ bool) bool {
+
+	input := cloudformation.ListStacksInput{}
+
+	input.SetStackStatusFilter(stackStatus)
+
+	if err := c.ListStackInstancesPagesWithContext(ctx, &input, func(output *cloudformation.ListStackInstancesOutput, _ bool) bool {
 		result = append(result, output.Summaries...)
 		return true
 	}); err != nil {
@@ -40,9 +45,12 @@ func (c *defaultCloudformation) ListStackInstancesAsList(ctx context.Context, in
 	return result, nil
 }
 
-func (c *defaultCloudformation) DescribeStackEventsAsList(ctx context.Context, input *cloudformation.DescribeStackEventsInput) ([]*cloudformation.StackEvent, error) {
+func (c *defaultCloudformation) DescribeStackEventsAsList(ctx context.Context, stackName string) ([]*cloudformation.StackEvent, error) {
 	var result []*cloudformation.StackEvent
-	if err := c.DescribeStackEventsPagesWithContext(ctx, input, func(output *cloudformation.DescribeStackEventsOutput, _ bool) bool {
+	input := cloudformation.DescribeStackEventsInput{
+		StackName: &stackName,
+	}
+	if err := c.DescribeStackEventsPagesWithContext(ctx, &input, func(output *cloudformation.DescribeStackEventsOutput, _ bool) bool {
 		result = append(result, output.StackEvents...)
 		return true
 	}); err != nil {
