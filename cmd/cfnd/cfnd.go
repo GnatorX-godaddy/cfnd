@@ -12,7 +12,7 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:  "cfnerr",
+		Name:  "cfnd",
 		Usage: "Find Cloudtrail events for your CloudFormation errors",
 		Action: func(c *cli.Context) error {
 			fmt.Println(ctl.Find(c.Context, c.Args().Get(0), c.Args().Get(1)))
