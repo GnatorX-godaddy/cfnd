@@ -20,7 +20,7 @@ func Find(ctx context.Context, stackName string, region string) string {
 	result, err := cfClient.ListStackAsList(ctx, stackStatus)
 	for _, summary := range result {
 		if strings.Contains(*summary.StackName, stackName) {
-			return *summary.StackName
+			return summary.String()
 		}
 	}
 	if err != nil {

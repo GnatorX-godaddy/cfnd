@@ -15,6 +15,9 @@ type Cloudformation interface {
 	// wrapper for ListStackInstancesWithContext and aggregate result into list
 	ListStackAsList(ctx context.Context, stackStatus []*string) ([]*cloudformation.StackSummary, error)
 
+	// wrapper for ListStackWithNameAsList and aggregate result into list
+	ListStackWithNameAsList(ctx context.Context, stackStatus []*string, stackName string) ([]*cloudformation.StackSummary, error)
+
 	// wrapper for DescribeStackEvents and aggregate result into list
 	DescribeStackEventsAsList(ctx context.Context, stackName string) ([]*cloudformation.StackEvent, error)
 }
@@ -44,6 +47,10 @@ func (c *defaultCloudformation) ListStackAsList(ctx context.Context, stackStatus
 		return nil, err
 	}
 	return result, nil
+}
+
+func (c *defaultCloudformation) ListStackWithNameAsList(ctx context.Context, stackStatus []*string, stackName string) ([]*cloudformation.StackSummary, error) {
+	return nil, nil
 }
 
 func (c *defaultCloudformation) DescribeStackEventsAsList(ctx context.Context, stackName string) ([]*cloudformation.StackEvent, error) {
