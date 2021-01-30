@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -15,8 +16,8 @@ type Cloudformation interface {
 	// wrapper for ListStackInstancesWithContext and aggregate result into list
 	ListStackAsList(ctx context.Context, stackStatus []*string) ([]*cloudformation.StackSummary, error)
 
-	// wrapper for ListStackWithNameAsList and aggregate result into list
-	ListStackWithNameAsList(ctx context.Context, stackStatus []*string, stackName string) ([]*cloudformation.StackSummary, error)
+	// Searchs for stacks with stackname
+	ListStackWithNameAsList(ctx context.Context, stackStatus []*string, stackName string) (*cloudformation.StackSummary, error)
 
 	// wrapper for DescribeStackEvents and aggregate result into list
 	DescribeStackEventsAsList(ctx context.Context, stackName string) ([]*cloudformation.StackEvent, error)
@@ -49,8 +50,25 @@ func (c *defaultCloudformation) ListStackAsList(ctx context.Context, stackStatus
 	return result, nil
 }
 
-func (c *defaultCloudformation) ListStackWithNameAsList(ctx context.Context, stackStatus []*string, stackName string) ([]*cloudformation.StackSummary, error) {
-	return nil, nil
+func (c *defaultCloudformation) ListStackWithNameAsList(ctx context.Context, stackStatus []*string, stackName string) (*cloudformation.StackSummary, error) {
+	var result *cloudformation.StackSummary
+
+	input := cloudformation.ListStacksInput{}
+
+	input.SetStackStatusFilter(stackStatus)
+
+	if err := c.ListStacksPagesWithContext(ctx, &input, func(output *cloudformation.ListStacksOutput, _ bool) bool {
+		for _, summary := range output.StackSummaries {
+			if strings.Contains(*summary.StackName, stackName) {
+				result = summary
+				return false
+			}
+		}
+		return true
+	}); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (c *defaultCloudformation) DescribeStackEventsAsList(ctx context.Context, stackName string) ([]*cloudformation.StackEvent, error) {
