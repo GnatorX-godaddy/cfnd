@@ -17,8 +17,6 @@ func main() {
 		Name:  "cfnd",
 		Usage: "Find Cloudtrail events for your CloudFormation errors",
 		Action: func(c *cli.Context) error {
-			fmt.Println(region)
-			fmt.Println(stackName)
 			fmt.Println(ctl.Find(c.Context, stackName, region))
 			return nil
 		},
