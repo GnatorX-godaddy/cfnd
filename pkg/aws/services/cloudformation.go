@@ -20,7 +20,7 @@ type Cloudformation interface {
 	ListStackWithNameAsList(ctx context.Context, stackStatus []*string, stackName string) (*cloudformation.StackSummary, error)
 
 	// wrapper for DescribeStackEvents and aggregate result into list
-	DescribeStackEventsAsList(ctx context.Context, stackName string) ([]*cloudformation.StackEvent, error)
+	DescribeStackEventsAsList(ctx context.Context, stackID string) ([]*cloudformation.StackEvent, error)
 }
 
 //NewCloudFormation creates a new CloudFormatinon wrapper
@@ -71,10 +71,10 @@ func (c *defaultCloudformation) ListStackWithNameAsList(ctx context.Context, sta
 	return result, nil
 }
 
-func (c *defaultCloudformation) DescribeStackEventsAsList(ctx context.Context, stackName string) ([]*cloudformation.StackEvent, error) {
+func (c *defaultCloudformation) DescribeStackEventsAsList(ctx context.Context, stackID string) ([]*cloudformation.StackEvent, error) {
 	var result []*cloudformation.StackEvent
 	input := cloudformation.DescribeStackEventsInput{
-		StackName: &stackName,
+		StackName: &stackID,
 	}
 	if err := c.DescribeStackEventsPagesWithContext(ctx, &input, func(output *cloudformation.DescribeStackEventsOutput, _ bool) bool {
 		result = append(result, output.StackEvents...)

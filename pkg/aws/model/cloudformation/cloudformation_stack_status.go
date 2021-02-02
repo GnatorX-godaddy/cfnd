@@ -1,4 +1,4 @@
-//go:generate go-enum -f=./cloudformation.go
+//go:generate go-enum -f=./cloudformation_stack_status.go
 package cloudformation
 
 // ENUM(
