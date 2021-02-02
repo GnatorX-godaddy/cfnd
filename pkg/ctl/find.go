@@ -38,7 +38,7 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 		// Look for events where resource failed, search for when the resource started the update
 		if strings.Contains(*stackEvent.ResourceStatus, "FAILED") && !strings.EqualFold(*stackEvent.LogicalResourceId, stackName) &&
 			!strings.Contains(*stackEvent.ResourceStatusReason, "Resource creation cancelled") {
-			f.WriteString(stackName + ": Failure reason: " + *stackEvent.ResourceStatusReason + "\n")
+			f.WriteString("//" + stackName + ": Failure reason: " + *stackEvent.ResourceStatusReason + "\n")
 			status := strings.ReplaceAll(*stackEvent.ResourceStatus, "FAILED", "IN_PROGRESS")
 			for j := i + 1; j < len(cfStackEvents); j++ {
 				if *cfStackEvents[j].PhysicalResourceId == *stackEvent.PhysicalResourceId &&
@@ -46,8 +46,8 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 					startTime := cfStackEvents[j].Timestamp.Add(time.Second)
 					endTime := stackEvent.Timestamp
 
-					f.WriteString(startTime.Local().String() + "\n")
-					f.WriteString(endTime.Local().String() + "\n")
+					f.WriteString("//" + startTime.Local().String() + "\n")
+					f.WriteString("//" + endTime.Local().String() + "\n")
 
 					// https://docs.aws.amazon.com/awscloudtrail/latest/userguide/how-cloudtrail-works.html
 					// Cloudtrail only tracks for last 90 days + within 15 min of current time
@@ -75,7 +75,7 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 						log.Fatal(err)
 					}
 
-					f.WriteString(fmt.Sprintf("Found %d CloudTrail Events \n", len(events)))
+					f.WriteString(fmt.Sprintf("//Found %d CloudTrail Events \n", len(events)))
 					fmt.Println(len(events))
 
 					// Sort it so we have earliest events first

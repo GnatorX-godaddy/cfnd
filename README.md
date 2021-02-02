@@ -4,5 +4,5 @@ CloudFormation detective is a tool that helps you figure out why your CloudFomra
 
 ## Setup 
 
-Run `go build ./cmd/cfnd/cfnd.go`
-Then you can try `./cfnd help` to see what options are available
+Run `go get -u github.com/GnatorX/cfnd`
+Then you can try `cfnd help` to see what options are available
