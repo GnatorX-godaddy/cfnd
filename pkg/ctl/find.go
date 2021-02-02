@@ -15,8 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudtrail"
 	"k8s.io/apimachinery/pkg/util/json"
 
-	ctmodel "cfnd/pkg/aws/model/cloudtrail"
-	"cfnd/pkg/aws/services"
+	ctmodel "github.com/GnatorX/cfnd/pkg/aws/model/cloudtrail"
+	"github.com/GnatorX/cfnd/pkg/aws/services"
 )
 
 // Find helps find cloudtrail event of failed cloudformation stacks

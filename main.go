@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"cfnd/pkg/ctl"
+	"github.com/GnatorX/cfnd/pkg/ctl"
 
 	"github.com/urfave/cli/v2"
 )

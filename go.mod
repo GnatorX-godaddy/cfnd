@@ -1,4 +1,4 @@
-module cfnd
+module github.com/GnatorX/cfnd
 
 go 1.14
 
