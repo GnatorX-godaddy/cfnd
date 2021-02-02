@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"cloudformation-error/pkg/ctl"
+	"cfnd/pkg/ctl"
 
 	"github.com/urfave/cli/v2"
 )

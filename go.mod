@@ -1,4 +1,4 @@
-module cloudformation-error
+module cfnd
 
 go 1.14
 

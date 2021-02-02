@@ -15,8 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudtrail"
 	"k8s.io/apimachinery/pkg/util/json"
 
-	ctmodel "cloudformation-error/pkg/aws/model/cloudtrail"
-	"cloudformation-error/pkg/aws/services"
+	ctmodel "cfnd/pkg/aws/model/cloudtrail"
+	"cfnd/pkg/aws/services"
 )
 
 // Find helps find cloudtrail event of failed cloudformation stacks
@@ -48,6 +48,17 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 
 					f.WriteString(startTime.Local().String() + "\n")
 					f.WriteString(endTime.Local().String() + "\n")
+
+					// https://docs.aws.amazon.com/awscloudtrail/latest/userguide/how-cloudtrail-works.html
+					// Cloudtrail only tracks for last 90 days + within 15 min of current time
+					if time.Now().Sub(*endTime).Hours()/24 > 90 {
+						fmt.Println("Your stack failure happened > 90 days ago and we don't have information on it from CloudTrail")
+						return ""
+					}
+					if time.Now().Sub(startTime).Minutes() < 15 {
+						fmt.Println("Your stack failed too recent, Cloudtrail only supports within the last 15 mins of events")
+						return ""
+					}
 
 					attributeKey := "ReadOnly"
 					attributeValue := "false"
@@ -94,5 +105,5 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 		}
 	}
 
-	return "sdf"
+	return ""
 }
