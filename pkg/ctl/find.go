@@ -43,7 +43,7 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 			for j := i + 1; j < len(cfStackEvents); j++ {
 				if *cfStackEvents[j].PhysicalResourceId == *stackEvent.PhysicalResourceId &&
 					status == *cfStackEvents[j].ResourceStatus {
-					startTime := cfStackEvents[j].Timestamp.Add(time.Second)
+					startTime := cfStackEvents[j].Timestamp
 					endTime := stackEvent.Timestamp
 
 					f.WriteString("//" + startTime.Local().String() + "\n")
@@ -55,7 +55,7 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 						fmt.Println("Your stack failure happened > 90 days ago and we don't have information on it from CloudTrail")
 						return ""
 					}
-					if time.Now().Sub(startTime).Minutes() < 15 {
+					if time.Now().Sub(*startTime).Minutes() < 15 {
 						fmt.Println("Your stack failed too recent, Cloudtrail only supports within the last 15 mins of events")
 						return ""
 					}
@@ -69,7 +69,7 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 						},
 					}
 
-					events, err := ctClient.LookupEventsAsList(ctx, &startTime, endTime, lookup)
+					events, err := ctClient.LookupEventsAsList(ctx, startTime, endTime, lookup)
 
 					if err != nil {
 						log.Fatal(err)
