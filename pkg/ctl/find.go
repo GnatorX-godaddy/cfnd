@@ -56,7 +56,7 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 						return ""
 					}
 					if time.Now().Sub(*startTime).Minutes() < 15 {
-						fmt.Println("Your stack failed too recent, Cloudtrail only supports within the last 15 mins of events")
+						fmt.Println("Your stack failed too recently. Cloudtrail only supports within the last 15 mins of events")
 						return ""
 					}
 
