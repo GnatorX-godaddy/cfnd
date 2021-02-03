@@ -101,11 +101,11 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 						}
 					}
 
-					return ""
+					return "Done"
 				}
 			}
 		}
 	}
 
-	return ""
+	return "Done"
 }

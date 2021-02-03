@@ -8,8 +8,27 @@ Requires go 1.14
 Run `go get -u github.com/GnatorX/cfnd`
 Then you can try `cfnd help` to see what options are available
 
-
 ## Usage
+
+```bash
+cfnd help
+NAME:
+   cfnd - Find Cloudtrail events for your CloudFormation errors
+
+USAGE:
+   cfnd [global options] command [command options] [arguments...]
+
+COMMANDS:
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --stackname value, -s value  Name of the stack
+   --output value, -o value     Output file name (default: cf_error.json)
+   --readonly, --ro             Return readonly events from CloudTrail. Add the flag if you want readonly to be true (default: false)
+   --all, -a                    Return all events from CloudTrail. By default, only Events with error is returned. Add the flag if you want all events (default: false)
+   --region value, -r value     AWS region for the search (default: us-west-2)
+   --help, -h                   show help (default: false)
+```
 
 Let say you have a stack that failed with an unknown error. Stack name is `example-stack`. You would run `cfnd -s example-stack -o cf-error.json` (assuming you are in us-west-2 and this failure happened > 15 mins ago). This will dump the cloudtrail logs into cf-error.json similar to the follow example json.
 
