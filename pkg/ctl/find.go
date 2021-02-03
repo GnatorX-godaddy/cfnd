@@ -20,13 +20,17 @@ import (
 )
 
 // Find helps find cloudtrail event of failed cloudformation stacks
-func Find(ctx context.Context, stackName string, region string, outputFile string) string {
+func Find(ctx context.Context, stackName string, region string, outputFile string, readOnly bool, all bool) string {
 	awsSess := session.Must(session.NewSession(&aws.Config{Region: aws.String(region)}))
 	cfClient := services.NewCloudFormation(awsSess)
 	ctClient := services.NewCloudTrail(awsSess)
 
 	stackStatus := []*string{}
 	cfStack, err := cfClient.ListStackWithNameAsList(ctx, stackStatus, stackName)
+	if cfStack == nil {
+		log.Println("Found no stacks")
+		return ""
+	}
 	cfStackEvents, err := cfClient.DescribeStackEventsAsList(ctx, *cfStack.StackId)
 	if err != nil {
 		log.Fatal(err)
@@ -60,23 +64,20 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 						return ""
 					}
 
-					attributeKey := "ReadOnly"
-					attributeValue := "false"
-					lookup := []*cloudtrail.LookupAttribute{
-						&cloudtrail.LookupAttribute{
+					lookup := []*cloudtrail.LookupAttribute{}
+					if !readOnly {
+						attributeKey := "ReadOnly"
+						attributeValue := "false"
+						lookup = append(lookup, &cloudtrail.LookupAttribute{
 							AttributeKey:   &attributeKey,
 							AttributeValue: &attributeValue,
-						},
+						})
 					}
-
 					events, err := ctClient.LookupEventsAsList(ctx, startTime, endTime, lookup)
 
 					if err != nil {
 						log.Fatal(err)
 					}
-
-					f.WriteString(fmt.Sprintf("//Found %d CloudTrail Events \n", len(events)))
-					fmt.Println(len(events))
 
 					// Sort it so we have earliest events first
 					sort.Slice(events, func(i, j int) bool {
@@ -90,7 +91,8 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 						if err != nil {
 							log.Fatal(err)
 						}
-						if cte.ErrorCode != nil {
+
+						if all || cte.ErrorCode != nil {
 							prettyJSON, err := pjson.MarshalIndent(cte, "", "    ")
 							_, err = f.WriteString(string(prettyJSON))
 							if err != nil {

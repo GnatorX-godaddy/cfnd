@@ -14,12 +14,14 @@ func main() {
 	var region string
 	var stackName string
 	var outputFile string
+	var readOnly bool
+	var all bool
 
 	app := &cli.App{
 		Name:  "cfnd",
 		Usage: "Find Cloudtrail events for your CloudFormation errors",
 		Action: func(c *cli.Context) error {
-			fmt.Println(ctl.Find(c.Context, stackName, region, outputFile))
+			fmt.Println(ctl.Find(c.Context, stackName, region, outputFile, readOnly, all))
 			return nil
 		},
 		Flags: []cli.Flag{
@@ -37,6 +39,20 @@ func main() {
 				DefaultText: "cf_error.json",
 				Value:       "cf_error.json",
 			},
+			&cli.BoolFlag{
+				Name:        "readonly",
+				Usage:       "Return readonly events from CloudTrail. Add the flag if you want readonly to be true",
+				Aliases:     []string{"ro"},
+				Destination: &readOnly,
+				Value:       false,
+			},
+			&cli.BoolFlag{
+				Name:        "all",
+				Usage:       "Return all events from CloudTrail. By default, only Events with error is returned. Add the flag if you want all events",
+				Aliases:     []string{"a"},
+				Destination: &all,
+				Value:       false,
+			},
 			&cli.StringFlag{
 				Name:        "region",
 				Usage:       "AWS region for the search",
@@ -47,6 +63,7 @@ func main() {
 			},
 		},
 	}
+
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)

@@ -21,6 +21,8 @@ type Cloudformation interface {
 
 	// wrapper for DescribeStackEvents and aggregate result into list
 	DescribeStackEventsAsList(ctx context.Context, stackID string) ([]*cloudformation.StackEvent, error)
+
+	// DescribeStackResources(ctx context.Context, )
 }
 
 //NewCloudFormation creates a new CloudFormatinon wrapper
