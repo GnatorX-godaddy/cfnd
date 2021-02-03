@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -21,7 +20,7 @@ func main() {
 		Name:  "cfnd",
 		Usage: "Find Cloudtrail events for your CloudFormation errors",
 		Action: func(c *cli.Context) error {
-			fmt.Println(ctl.Find(c.Context, stackName, region, outputFile, readOnly, all))
+			ctl.Find(c.Context, stackName, region, outputFile, readOnly, all)
 			return nil
 		},
 		Flags: []cli.Flag{

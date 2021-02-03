@@ -12,6 +12,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/cloudtrail"
 	"k8s.io/apimachinery/pkg/util/json"
 
@@ -25,17 +26,15 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 	cfClient := services.NewCloudFormation(awsSess)
 	ctClient := services.NewCloudTrail(awsSess)
 
-	stackStatus := []*string{}
-	cfStack, err := cfClient.ListStackWithNameAsList(ctx, stackStatus, stackName)
-	if cfStack == nil {
-		log.Println("Found no stacks")
+	cfStackEvents := findCFStackEvents(ctx, cfClient, stackName)
+	if cfStackEvents == nil {
 		return ""
 	}
-	cfStackEvents, err := cfClient.DescribeStackEventsAsList(ctx, *cfStack.StackId)
+
+	f, err := os.Create(outputFile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	f, err := os.Create(outputFile)
 	defer f.Close()
 
 	for i, stackEvent := range cfStackEvents {
@@ -53,26 +52,11 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 					f.WriteString("//" + startTime.Local().String() + "\n")
 					f.WriteString("//" + endTime.Local().String() + "\n")
 
-					// https://docs.aws.amazon.com/awscloudtrail/latest/userguide/how-cloudtrail-works.html
-					// Cloudtrail only tracks for last 90 days + within 15 min of current time
-					if time.Now().Sub(*endTime).Hours()/24 > 90 {
-						fmt.Println("Your stack failure happened > 90 days ago and we don't have information on it from CloudTrail")
-						return ""
-					}
-					if time.Now().Sub(*startTime).Minutes() < 15 {
-						fmt.Println("Your stack failed too recently. Cloudtrail only supports within the last 15 mins of events")
+					if inBound := isStartAndEndTimeInBound(*startTime, *endTime); !inBound {
 						return ""
 					}
 
-					lookup := []*cloudtrail.LookupAttribute{}
-					if !readOnly {
-						attributeKey := "ReadOnly"
-						attributeValue := "false"
-						lookup = append(lookup, &cloudtrail.LookupAttribute{
-							AttributeKey:   &attributeKey,
-							AttributeValue: &attributeValue,
-						})
-					}
+					lookup := buildCloudTrailLookupAttribute(readOnly)
 					events, err := ctClient.LookupEventsAsList(ctx, startTime, endTime, lookup)
 
 					if err != nil {
@@ -108,4 +92,45 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 	}
 
 	return "Done"
+}
+
+func findCFStackEvents(ctx context.Context, cfClient services.Cloudformation, stackName string) []*cloudformation.StackEvent {
+	stackStatus := []*string{}
+	cfStack, err := cfClient.ListStackWithNameAsList(ctx, stackStatus, stackName)
+	if cfStack == nil {
+		log.Println("Found no stacks")
+		return nil
+	}
+	cfStackEvents, err := cfClient.DescribeStackEventsAsList(ctx, *cfStack.StackId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return cfStackEvents
+}
+
+func isStartAndEndTimeInBound(startTime time.Time, endTime time.Time) bool {
+	// https://docs.aws.amazon.com/awscloudtrail/latest/userguide/how-cloudtrail-works.html
+	// Cloudtrail only tracks for last 90 days + within 15 min of current time
+	if time.Now().Sub(endTime).Hours()/24 > 90 {
+		fmt.Println("Your stack failure happened > 90 days ago and we don't have information on it from CloudTrail")
+		return false
+	}
+	if time.Now().Sub(startTime).Minutes() < 15 {
+		fmt.Println("Your stack failed too recently. Cloudtrail only supports within the last 15 mins of events")
+		return false
+	}
+	return true
+}
+
+func buildCloudTrailLookupAttribute(readOnly bool) []*cloudtrail.LookupAttribute {
+	lookup := []*cloudtrail.LookupAttribute{}
+	if !readOnly {
+		attributeKey := "ReadOnly"
+		attributeValue := "false"
+		lookup = append(lookup, &cloudtrail.LookupAttribute{
+			AttributeKey:   &attributeKey,
+			AttributeValue: &attributeValue,
+		})
+	}
+	return lookup
 }

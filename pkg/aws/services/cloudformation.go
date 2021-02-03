@@ -22,7 +22,7 @@ type Cloudformation interface {
 	// wrapper for DescribeStackEvents and aggregate result into list
 	DescribeStackEventsAsList(ctx context.Context, stackID string) ([]*cloudformation.StackEvent, error)
 
-	// DescribeStackResources(ctx context.Context, )
+	DescribeStackResourcesAsList(ctx context.Context, stackID string) ([]*cloudformation.StackResource, error)
 }
 
 //NewCloudFormation creates a new CloudFormatinon wrapper
@@ -85,4 +85,16 @@ func (c *defaultCloudformation) DescribeStackEventsAsList(ctx context.Context, s
 		return nil, err
 	}
 	return result, nil
+}
+
+func (c *defaultCloudformation) DescribeStackResourcesAsList(ctx context.Context, stackID string) ([]*cloudformation.StackResource, error) {
+	input := cloudformation.DescribeStackResourcesInput{
+		StackName: &stackID,
+	}
+	output, err := c.DescribeStackResourcesWithContext(ctx, &input)
+	if err != nil {
+		return nil, err
+	}
+
+	return output.StackResources, nil
 }
