@@ -11,7 +11,7 @@ type UserIdentity struct {
 }
 
 type CloudTrailEvent struct {
-	EventVersion        string                 `json:"eventVersions"`
+	EventVersions       string                 `json:"eventVersions"`
 	UserIdentity        UserIdentity           `json:userIdentity"`
 	EventTime           time.Time              `json:"eventTime"`
 	EventSource         string                 `json:"eventSource"`
