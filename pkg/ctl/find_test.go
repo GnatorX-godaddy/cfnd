@@ -80,7 +80,7 @@ func TestFindCFStackEvents_NoStacks_nil(t *testing.T) {
 	assert.Nil(t, actual, "findCFStackEvents should return nil if CF client returned nil")
 }
 
-func TestFindCFStackEvents_ListStackWithNameAsListError_nil(t *testing.T) {
+func TestFindCFStackEvents_ListStackWithNameAsListError_Error(t *testing.T) {
 	mockClient := mockCFClient{
 		ListStackWithNameAsListError: errors.New("fail"),
 	}
@@ -107,4 +107,21 @@ func TestFindCFStackEvents_FoundStackAndEvents_Events(t *testing.T) {
 	actual, err := findCFStackEvents(ctx, &mockClient, "test")
 	assert.Nil(t, err, "Error should be nil")
 	assert.NotNil(t, actual, "findCFStackEvents should return events")
+}
+
+func TestFindCFStackEvents_DescribeStackEventsAsListError_Error(t *testing.T) {
+	stackID := "1234"
+	stack := cloudformation.StackSummary{
+		StackId: &stackID,
+	}
+	mockClient := mockCFClient{
+		ListStackWithNameAsListResult:  &stack,
+		DescribeStackEventsAsListError: errors.New("fail"),
+	}
+
+	ctx := context.Background()
+
+	actual, err := findCFStackEvents(ctx, &mockClient, "test")
+	assert.NotNil(t, err, "Should return an error if DescribeStackEventsAsList failed")
+	assert.Nil(t, actual, "findCFStackEvents should return nil")
 }
