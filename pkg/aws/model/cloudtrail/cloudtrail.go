@@ -2,6 +2,7 @@ package cloudtrail
 
 import "time"
 
+//UserIdentity describes the user entity in a CloudTrail event
 type UserIdentity struct {
 	Type        string `json:"type"`
 	PrincipalID string `json:"principalId"`
@@ -10,7 +11,8 @@ type UserIdentity struct {
 	UserName    string `json:"userName"`
 }
 
-type CloudTrailEvent struct {
+//Event describes a cloudtrail event
+type Event struct {
 	EventVersions       string                 `json:"eventVersions"`
 	UserIdentity        UserIdentity           `json:userIdentity"`
 	EventTime           time.Time              `json:"eventTime"`

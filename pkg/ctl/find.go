@@ -69,7 +69,7 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 					})
 
 					for _, event := range events {
-						cte := ctmodel.CloudTrailEvent{}
+						cte := ctmodel.Event{}
 						err := json.Unmarshal([]byte(*event.CloudTrailEvent), &cte)
 						cte.EventTime = cte.EventTime.Local()
 						if err != nil {

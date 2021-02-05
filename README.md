@@ -85,5 +85,3 @@ Let say you have a stack that failed with an unknown error. Stack name is `examp
 }
 
 ```
-
-At this time, the tool only retrieves non-Readonly events and only the first resource that fail within the stack.
