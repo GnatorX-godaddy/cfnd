@@ -33,7 +33,7 @@ GLOBAL OPTIONS:
 Let say you have a stack that failed with an unknown error. Stack name is `example-stack`. You would run `cfnd -s example-stack -o cf-error.json` (assuming you are in us-west-2 and this failure happened > 15 mins ago). This will dump the cloudtrail logs into cf-error.json similar to the follow example json.
 
 ```javascript
-//Sexample-stack: Failure reason: You are not authorized to launch instances with this launch template. Not authorized for images: [ami-x] (Service: AmazonEKS; Status Code: 400; Error Code: InvalidRequestException; Request ID: 12345-1cb2-4b15-8f10-7f9f8cfb7ada; Proxy: null)
+//example-stack: Failure reason: You are not authorized to launch instances with this launch template. Not authorized for images: [ami-x] (Service: AmazonEKS; Status Code: 400; Error Code: InvalidRequestException; Request ID: 12345-1cb2-4b15-8f10-7f9f8cfb7ada; Proxy: null)
 //2021-02-02 16:03:44.452 -0800 PST
 //2021-02-02 16:03:46.611 -0800 PST
 //Found 1 CloudTrail Events
