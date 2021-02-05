@@ -26,7 +26,10 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 	cfClient := services.NewCloudFormation(awsSess)
 	ctClient := services.NewCloudTrail(awsSess)
 
-	cfStackEvents := findCFStackEvents(ctx, cfClient, stackName)
+	cfStackEvents, err := findCFStackEvents(ctx, cfClient, stackName)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if cfStackEvents == nil {
 		return ""
 	}
@@ -94,23 +97,30 @@ func Find(ctx context.Context, stackName string, region string, outputFile strin
 	return "Done"
 }
 
-func findCFStackEvents(ctx context.Context, cfClient services.Cloudformation, stackName string) []*cloudformation.StackEvent {
+func findCFStackEvents(ctx context.Context, cfClient services.Cloudformation, stackName string) ([]*cloudformation.StackEvent, error) {
 	stackStatus := []*string{}
 	cfStack, err := cfClient.ListStackWithNameAsList(ctx, stackStatus, stackName)
+	if err != nil {
+		return nil, err
+	}
 	if cfStack == nil {
 		log.Println("Found no stacks")
-		return nil
+		return nil, nil
 	}
 	cfStackEvents, err := cfClient.DescribeStackEventsAsList(ctx, *cfStack.StackId)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return cfStackEvents
+	return cfStackEvents, nil
 }
 
 func isStartAndEndTimeInBound(startTime time.Time, endTime time.Time) bool {
 	// https://docs.aws.amazon.com/awscloudtrail/latest/userguide/how-cloudtrail-works.html
 	// Cloudtrail only tracks for last 90 days + within 15 min of current time
+	if startTime.Sub(endTime) > 0 {
+		fmt.Println("Start time can not be later than end time")
+		return false
+	}
 	if time.Now().Sub(endTime).Hours()/24 > 90 {
 		fmt.Println("Your stack failure happened > 90 days ago and we don't have information on it from CloudTrail")
 		return false
