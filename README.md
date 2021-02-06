@@ -1,6 +1,8 @@
 # Cloudformation Detective
 
 CloudFormation detective is a tool that helps you figure out why your CloudFomration stack updates, create or delete might have failed when Cloudformation events are not clear.
+![Go](https://github.com/GnatorX/cfnd/workflows/Go/badge.svg?branch=main)
+
 
 ## Setup 
 
