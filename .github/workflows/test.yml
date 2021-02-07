@@ -3,6 +3,12 @@ name: Go
 on:
   pull_request:
     branches: [ '**' ]
+  push:
+    branches:
+      - 'main'
+      - 'releases/v*'
+    tags:
+      - 'v*'
 
 jobs:
 
